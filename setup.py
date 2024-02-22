@@ -52,6 +52,9 @@ def passwordHider(prompt):
                 print("\b \b", end="", flush=True)
         else:
             password = str(password) + str(chr(ch))
+            print(f"{chr(ch)}", end="", flush=True)
+            time.sleep(0.15)
+            print("\b \b", end="", flush=True)
             print("*", end="", flush=True)
     return password
 
