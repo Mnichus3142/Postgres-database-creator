@@ -1,9 +1,8 @@
 import os
 import time
-import sys
-import gk
-import getpass
+import components.gk as gk
 import json
+import components.passwordHider as passwordHider
 import psycopg2
 from psycopg2 import sql
 
@@ -26,37 +25,38 @@ def start ():
     main()
 
 def main ():
-    name = ''
-    password = ''
+    connection_parameters = {
+        "host": '',
+        "port": 5432,
+        "user": '',
+        "password": ''
+    }
     
     while True:
         print(art)
-        name = input("Username: ")
         
-        password = passwordHider("Password: ")
+        connection_parameters["host"] = input("IP address: ")
+        connection_parameters["port"] = 5432
+        portTemp = input("Port (leave blank for default): ")
         
-        print(f"\n{password}")
+        if portTemp != '':
+            connection_parameters["port"] = portTemp
         
-def passwordHider(prompt):
-    print(prompt, end="", flush=True)
-  
-    password = ""
-  
-    while True:
-        ch = gk.getkeyInASCII()
-        if ch == 13 or ch == 10:
-            break
-        elif ch == 8:
-            if password:
-                password = password[:-1]
-                print("\b \b", end="", flush=True)
-        else:
-            password = str(password) + str(chr(ch))
-            print(f"{chr(ch)}", end="", flush=True)
-            time.sleep(0.15)
-            print("\b \b", end="", flush=True)
-            print("*", end="", flush=True)
-    return password
+        connection_parameters["user"] = input("Username: ")
+        
+        connection_parameters["password"] = passwordHider.passwordHider("Password: ")
+        
+        try:
+            conn = psycopg2.connect(
+                host = connection_parameters["host"],
+                port = connection_parameters["port"],
+                user = connection_parameters["user"],
+                password = connection_parameters["password"],
+            )
+            
+        except:
+            print("\n\nWrong creditials")
+        
 
 # with open('setup.json', 'r') as setup:
 #     setup_data = json.load(setup)
