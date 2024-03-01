@@ -21,8 +21,47 @@ def cleaner ():
     except:
         os.system('clear')
         
+def createDatabase (connection_parameters):  
+    conn = psycopg2.connect(
+        host = connection_parameters["host"],
+        port = connection_parameters["port"],
+        user = connection_parameters["user"],
+        password = connection_parameters["password"],
+    )
+    
+    passwordDoNotMatch = True
+    password = ""
+    
+    while passwordDoNotMatch:
+        cleaner()
+        pass1 = passwordHider.passwordHider("Enter new admin password: ")
+        pass2 = passwordHider.passwordHider("Confirm new admin password: ")
+        
+        if pass1 == pass2:
+            passwordDoNotMatch = False
+            password = pass1
+    
+    cleaner()
+    print("Creating database from file...")
+    
+    
+    
+    # cur = conn.cursor()
+    # conn.autocommit = True
+    
+    # try:
+    #     cur.execute(sql.SQL("CREATE DATABASE {}").format(sql.Identifier(name)))
+    # except:
+    #     print("Not working as expected")
+    
+    # conn.autocommit = False
+    # cur.close()
+    # conn.close()
+
+    # time.sleep(5)
+        
 def start ():
-    main()
+    return main()
 
 def main ():
     connection_parameters = {
@@ -32,7 +71,12 @@ def main ():
         "password": ''
     }
     
-    while True:
+    conn = 0
+    
+    ifEstablished = 0
+    
+    while ifEstablished == 0:
+        cleaner()
         print(art)
         
         connection_parameters["host"] = input("IP address: ")
@@ -54,8 +98,47 @@ def main ():
                 password = connection_parameters["password"],
             )
             
+            conn.close()
+            
+            ifEstablished = 1
+            
         except:
             print("\n\nWrong creditials")
+            time.sleep(0.5)
+            
+    menuElements = ["Create database from json file", "Exit"]
+    currentPos = 0        
+    
+    while True:
+        cleaner()
+        print(art)    
+        
+        for i in range(len(menuElements)):
+            if i == currentPos:
+                print(f"-> {menuElements[i]}")
+            else:
+                print(menuElements[i])
+                
+        button = gk.getkeyInASCII()
+        
+        # Move logic
+        
+        if button == 72 and currentPos != 0:
+            currentPos -= 1
+        
+        elif button == 80 and currentPos != len(menuElements) - 1:
+            currentPos += 1
+            
+        # What every button should do
+            
+        if (button == 13 or button == 10) and currentPos == 0:
+            createDatabase(connection_parameters)
+            
+        elif (button == 13 or button == 10) and currentPos == len(menuElements) - 1:
+            cleaner()
+            print("Goodbye")
+            time.sleep(1)
+            return 0
         
 
 # with open('setup.json', 'r') as setup:
