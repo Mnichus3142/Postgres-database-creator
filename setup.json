@@ -1,6 +1,7 @@
 {
-    "databaseName": "",
-    "databaseAdminName": "",
+    "databaseName": "test",
+    "databaseAdminName": "testAdmin",
+    "databaseUsersGroup": "True",
     "tab1_name": 
     {
         "column1_name":

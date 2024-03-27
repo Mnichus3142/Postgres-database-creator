@@ -21,44 +21,82 @@ def cleaner ():
     except:
         os.system('clear')
         
-def createDatabase (connection_parameters):  
-    conn = psycopg2.connect(
-        host = connection_parameters["host"],
-        port = connection_parameters["port"],
-        user = connection_parameters["user"],
-        password = connection_parameters["password"],
-    )
-    
-    passwordDoNotMatch = True
-    password = ""
-    
-    while passwordDoNotMatch:
-        cleaner()
-        pass1 = passwordHider.passwordHider("Enter new admin password: ")
-        pass2 = passwordHider.passwordHider("Confirm new admin password: ")
+def integralityCheck (json):
+    if json['databaseName'] == '':
+        return 0
         
-        if pass1 == pass2:
-            passwordDoNotMatch = False
-            password = pass1
+def createDatabase (connection_parameters):  
+    with open('setup.json', 'r') as setup:
+        setup_data = json.load(setup)
     
-    cleaner()
-    print("Creating database from file...")
-    
-    
-    
-    # cur = conn.cursor()
-    # conn.autocommit = True
     
     # try:
-    #     cur.execute(sql.SQL("CREATE DATABASE {}").format(sql.Identifier(name)))
+    #     conn = psycopg2.connect(
+    #         host = connection_parameters["host"],
+    #         port = connection_parameters["port"],
+    #         user = connection_parameters["user"],
+    #         password = connection_parameters["password"],
+    #     )
     # except:
-    #     print("Not working as expected")
+    #     cleaner()
+    #     print("Couldn't connect to database")
+    #     time.sleep(4)
     
-    # conn.autocommit = False
+    # # Variables
+    # databaseName = setup_data['databaseName']
+    # databaseAdminName = setup_data['databaseAdminName']
+    # groupName = setup_data['databaseName'] + "Users"
+    
+    # with conn:
+    #     with conn.cursor() as cur:
+    #         # Creating database
+    #         # try:
+    #         cur.execute(sql.SQL("CREATE DATABASE {}").format(sql.Identifier(databaseName)))
+    #         # except:
+    #         #     cleaner()
+    #         #     print("Error code 1")
+    #         #     time.sleep(3)
+    #         #     cur.close()
+    #         #     conn.close()
+    #         #     return 0
+    
+    # time.sleep(4)
+    
     # cur.close()
     # conn.close()
-
-    # time.sleep(5)
+    
+    # # Setting password for database admin
+    # passwordDoNotMatch = True
+    # password = ""
+    
+    # while passwordDoNotMatch:
+    #     cleaner()
+    #     print(f"Creating database: {databaseName}\n\nAdmin name: {databaseAdminName}\n\nCreating password\n")
+    #     pass1 = passwordHider.passwordHider("Enter new admin password: ")
+    #     print()
+    #     pass2 = passwordHider.passwordHider("Confirm new admin password: ")
+        
+    #     if pass1 == pass2:
+    #         passwordDoNotMatch = False
+    #         password = pass1
+            
+    # # Creating database group and admin
+    
+    # try:
+    #     cur.execute(sql.SQL("CREATE GROUP {}").format(sql.Identifier(groupName)))
+    #     # cur.execute(sql.SQL("CREATE USER {} WITH ENCRYPTED PASSWORD '{}'").format(sql.Identifier(setup_data['databaseAdminName']), sql.Identifier(password)))
+    #     # cur.execute(sql.SQL("ALTER GROUP {} ADD USER {}").format(sql.Identifier(f"{setup_data['databaseName']} + users"), sql.Identifier(setup_data['databaseAdminName'])))
+    #     # cur.execute(sql.SQL("GRANT all privileges ON DATABASE {} TO {}").format(sql.Identifier(setup_data['databaseName']), sql.Identifier(setup_data['databaseAdminName'])))
+    # except:
+    #     print("Error code 2")
+    #     cleaner()
+    #     time.sleep(3)
+    #     cur.close()
+    #     conn.close()
+    #     return 0
+    
+    # cur.close()
+    # conn.close()
         
 def start ():
     return main()
