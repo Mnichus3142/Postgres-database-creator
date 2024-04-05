@@ -4,7 +4,6 @@ import components.gk as gk
 import json
 import components.passwordHider as passwordHider
 import psycopg2
-from psycopg2 import sql
 
 art = """
   ____  ____   ___  _       ____  ____     ____                _             
@@ -15,50 +14,91 @@ art = """
                                                                              
 """
 
+conn = 0
+
 def cleaner ():
     try:
         os.system('cls')
     except:
         os.system('clear')
         
-def integralityCheck (json):
-    if json['databaseName'] == '':
-        return 0
-        
 def createDatabase (connection_parameters):  
+    global conn
+    
     with open('setup.json', 'r') as setup:
         setup_data = json.load(setup)
     
+    # *Variables
     
-    # try:
-    #     conn = psycopg2.connect(
-    #         host = connection_parameters["host"],
-    #         port = connection_parameters["port"],
-    #         user = connection_parameters["user"],
-    #         password = connection_parameters["password"],
-    #     )
-    # except:
-    #     cleaner()
-    #     print("Couldn't connect to database")
-    #     time.sleep(4)
+    databaseName = setup_data['databaseName']
+    databaseAdminName = setup_data['databaseAdminName']
+    groupName = setup_data['databaseName'] + "Users"
     
-    # # Variables
-    # databaseName = setup_data['databaseName']
-    # databaseAdminName = setup_data['databaseAdminName']
-    # groupName = setup_data['databaseName'] + "Users"
+    # *Creating database
+    
+    cursor = conn.cursor()
+    cursor.execute("SELECT datname FROM pg_database")
+    conn.commit()
+    cur = cursor.fetchall()
+    tab = [str(x)[2:-3] for x in cur]
+    
+    if databaseName not in tab:
+        conn.autocommit = True
+        cursor = conn.cursor()
+        cursor.execute(f"CREATE DATABASE {databaseName}")
+        
+    else:        
+        menuElements = ["Yes", "No"]
+        currentPos = 0        
+        
+        while True:
+            cleaner()
+            print(art) 
+            print("Database already created\nDo you want to drop it and create new?\n\n")
+            
+            for i in range(len(menuElements)):
+                if i == currentPos:
+                    print(f"-> {menuElements[i]}")
+                else:
+                    print(menuElements[i])
+                    
+            button = gk.getkeyInASCII()
+            
+            # Move logic
+            
+            if button == 72 and currentPos != 0:
+                currentPos -= 1
+            
+            elif button == 80 and currentPos != len(menuElements) - 1:
+                currentPos += 1
+                
+            # What every button should do
+                
+            if (button == 13 or button == 10) and currentPos == 0:
+                conn.autocommit = True
+                cursor = conn.cursor()
+                cursor.execute(f"DROP DATABASE {databaseName}")
+                cursor.execute(f"CREATE DATABASE {databaseName}")
+                
+            elif (button == 13 or button == 10) and currentPos == len(menuElements) - 1:
+                cleaner()
+                print("Goodbye")
+                time.sleep(1)
+                exit()
     
     # with conn:
     #     with conn.cursor() as cur:
     #         # Creating database
-    #         # try:
-    #         cur.execute(sql.SQL("CREATE DATABASE {}").format(sql.Identifier(databaseName)))
-    #         # except:
-    #         #     cleaner()
-    #         #     print("Error code 1")
-    #         #     time.sleep(3)
-    #         #     cur.close()
-    #         #     conn.close()
-    #         #     return 0
+    #         try:
+    #             conn.autocommit = True
+    #             cur.execute("CREATE DATABASE test")
+    #         except:
+    #             cleaner()
+    #             print("Error code 1")
+    #             time.sleep(3)
+    #             cur.close()
+    #             conn.close()
+    #             return 0
     
     # time.sleep(4)
     
@@ -102,14 +142,14 @@ def start ():
     return main()
 
 def main ():
+    global conn
+    
     connection_parameters = {
         "host": '',
         "port": 5432,
         "user": '',
         "password": ''
     }
-    
-    conn = 0
     
     ifEstablished = 0
     
@@ -135,8 +175,6 @@ def main ():
                 user = connection_parameters["user"],
                 password = connection_parameters["password"],
             )
-            
-            conn.close()
             
             ifEstablished = 1
             
@@ -177,35 +215,5 @@ def main ():
             print("Goodbye")
             time.sleep(1)
             return 0
-        
-
-# with open('setup.json', 'r') as setup:
-#     setup_data = json.load(setup)
-    
-# connection_parameters = {
-#     "host": setup_data["host"],
-#     "port": setup_data["port"],
-#     "user": setup_data["user"],
-#     "password": setup_data["password"]
-# }
-
-# conn = psycopg2.connect(
-#     host = connection_parameters["host"],
-#     port = connection_parameters["port"],
-#     user = connection_parameters["user"],
-#     password = connection_parameters["password"],
-# )
-
-# databaseName = "timeMenager"
-
-# cur = conn.cursor()
-# conn.autocommit = True
-
-# cur.execute(sql.SQL("CREATE DATABASE {}").format(sql.Identifier(databaseName)))
-
-# conn.autocommit = False
-
-# cur.close()
-# conn.close()
 
 start()
