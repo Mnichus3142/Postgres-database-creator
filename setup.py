@@ -21,6 +21,7 @@ def cleaner ():
         os.system('cls')
     except:
         os.system('clear')
+    print(art)
         
 def createDatabase (connection_parameters):  
     global conn
@@ -43,18 +44,25 @@ def createDatabase (connection_parameters):
     tab = [str(x)[2:-3] for x in cur]
     
     if databaseName not in tab:
-        conn.autocommit = True
-        cursor = conn.cursor()
-        cursor.execute(f"CREATE DATABASE {databaseName}")
+        try:
+            conn.autocommit = True
+            cursor = conn.cursor()
+            cursor.execute(f"CREATE DATABASE {databaseName}")
+            cleaner()
+        except:
+            cleaner()
+            print("Error code 1")
+            time.sleep(5)
+            return 0
         
     else:        
         menuElements = ["Yes", "No"]
-        currentPos = 0        
+        currentPos = 0
+        menu = True
         
-        while True:
+        while menu:
             cleaner()
-            print(art) 
-            print("Database already created\nDo you want to drop it and create new?\n\n")
+            print("Database already created\nDo you want to drop it and create new?\n")
             
             for i in range(len(menuElements)):
                 if i == currentPos:
@@ -79,6 +87,7 @@ def createDatabase (connection_parameters):
                 cursor = conn.cursor()
                 cursor.execute(f"DROP DATABASE {databaseName}")
                 cursor.execute(f"CREATE DATABASE {databaseName}")
+                menu = False
                 
             elif (button == 13 or button == 10) and currentPos == len(menuElements) - 1:
                 cleaner()
@@ -155,7 +164,6 @@ def main ():
     
     while ifEstablished == 0:
         cleaner()
-        print(art)
         
         connection_parameters["host"] = input("IP address: ")
         connection_parameters["port"] = 5432
@@ -186,8 +194,7 @@ def main ():
     currentPos = 0        
     
     while True:
-        cleaner()
-        print(art)    
+        cleaner()   
         
         for i in range(len(menuElements)):
             if i == currentPos:
@@ -208,7 +215,9 @@ def main ():
         # What every button should do
             
         if (button == 13 or button == 10) and currentPos == 0:
-            createDatabase(connection_parameters)
+            output = createDatabase(connection_parameters)
+            if output == 0:
+                return 0;
             
         elif (button == 13 or button == 10) and currentPos == len(menuElements) - 1:
             cleaner()

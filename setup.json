@@ -1,24 +1,48 @@
 {
     "databaseName": "test",
     "databaseAdminName": "testAdmin",
-    "databaseUsersGroup": "True",
-    "tab1_name": 
+
+    "groups":
     {
-        "column1_name":
+        "group1_name":
         {
-            "datatype": "",
-            "length": 0,
-            "notNull": "False",
-            "unique": "False",
-            "primaryKey": "False",
-            "check": "False",
-            "ckeckKeyCondition": "",
-            "ifForeignKey": "False",
-            "foreignKey": "",
-            "referencesTable": "",
-            "referencesKey": "",
-            "onDeleteSetNull": "False",
-            "onDeleteCascade": "False"
+            "select": "False",
+            "insert": "False",
+            "update": "False",
+            "delete": "False",
+            "truncate": "False",
+            "references": "False",
+            "trigger": "False",
+            "create": "False",
+            "connect": "False",
+            "temporary": "False",
+            "execute": "False",
+            "usage": "False",
+            "set": "False",
+            "alter system": "False"
+        }
+    },
+
+    "tabs":
+    {
+        "tab1_name": 
+        {
+            "column1_name":
+            {
+                "datatype": "",
+                "length": 0,
+                "notNull": "False",
+                "unique": "False",
+                "primaryKey": "False",
+                "check": "False",
+                "ckeckKeyCondition": "",
+                "ifForeignKey": "False",
+                "foreignKey": "",
+                "referencesTable": "",
+                "referencesKey": "",
+                "onDeleteSetNull": "False",
+                "onDeleteCascade": "False"
+            }
         }
     }
 }
