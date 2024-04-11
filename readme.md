@@ -71,3 +71,5 @@ Delete those optional lines if you don't want to use them
 # Error codes
 
 1. Database not created
+2. User already exist and couldn't be dropped
+3. User not created

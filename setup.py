@@ -29,10 +29,7 @@ def createDatabase (connection_parameters):
     with open('setup.json', 'r') as setup:
         setup_data = json.load(setup)
     
-    # *Variables
-    
-    databaseName = setup_data['databaseName']
-    databaseAdminName = setup_data['databaseAdminName']
+    databaseName = setup_data['databaseName'].lower()
     groupName = setup_data['databaseName'] + "Users"
     
     # *Creating database
@@ -42,6 +39,8 @@ def createDatabase (connection_parameters):
     conn.commit()
     cur = cursor.fetchall()
     tab = [str(x)[2:-3] for x in cur]
+    
+    # *If database exists
     
     if databaseName not in tab:
         try:
@@ -54,6 +53,8 @@ def createDatabase (connection_parameters):
             print("Error code 1")
             time.sleep(5)
             return 0
+        
+    # *If database doesn't extist
         
     else:        
         menuElements = ["Yes", "No"]
@@ -84,7 +85,6 @@ def createDatabase (connection_parameters):
                 
             if (button == 13 or button == 10) and currentPos == 0:
                 conn.autocommit = True
-                cursor = conn.cursor()
                 cursor.execute(f"DROP DATABASE {databaseName}")
                 cursor.execute(f"CREATE DATABASE {databaseName}")
                 menu = False
@@ -94,58 +94,143 @@ def createDatabase (connection_parameters):
                 print("Goodbye")
                 time.sleep(1)
                 exit()
+                
+    cursor.close()
+    conn.close()
+    conn = psycopg2.connect(
+        host = connection_parameters["host"],
+        port = connection_parameters["port"],
+        user = connection_parameters["user"],
+        password = connection_parameters["password"],
+        database = databaseName,
+    )
+    cursor = conn.cursor()
+                
+    # *Creating admin user
     
-    # with conn:
-    #     with conn.cursor() as cur:
-    #         # Creating database
-    #         try:
-    #             conn.autocommit = True
-    #             cur.execute("CREATE DATABASE test")
-    #         except:
-    #             cleaner()
-    #             print("Error code 1")
-    #             time.sleep(3)
-    #             cur.close()
-    #             conn.close()
-    #             return 0
-    
-    # time.sleep(4)
-    
-    # cur.close()
-    # conn.close()
-    
-    # # Setting password for database admin
-    # passwordDoNotMatch = True
-    # password = ""
-    
-    # while passwordDoNotMatch:
-    #     cleaner()
-    #     print(f"Creating database: {databaseName}\n\nAdmin name: {databaseAdminName}\n\nCreating password\n")
-    #     pass1 = passwordHider.passwordHider("Enter new admin password: ")
-    #     print()
-    #     pass2 = passwordHider.passwordHider("Confirm new admin password: ")
+    # *If admin do not exist
+
+    if 'databaseAdminName' in setup_data:
+        databaseAdminName = setup_data['databaseAdminName'].lower()
         
-    #     if pass1 == pass2:
-    #         passwordDoNotMatch = False
-    #         password = pass1
+        cursor.execute("select usename from pg_catalog.pg_user")
+        conn.commit()
+        cur = cursor.fetchall()
+        tab = [str(x)[2:-3] for x in cur]
+        
+        if databaseAdminName not in tab:
+            # *Setting password for database admin
+            passwordDoNotMatch = True
+            password = ""
             
-    # # Creating database group and admin
-    
-    # try:
-    #     cur.execute(sql.SQL("CREATE GROUP {}").format(sql.Identifier(groupName)))
-    #     # cur.execute(sql.SQL("CREATE USER {} WITH ENCRYPTED PASSWORD '{}'").format(sql.Identifier(setup_data['databaseAdminName']), sql.Identifier(password)))
-    #     # cur.execute(sql.SQL("ALTER GROUP {} ADD USER {}").format(sql.Identifier(f"{setup_data['databaseName']} + users"), sql.Identifier(setup_data['databaseAdminName'])))
-    #     # cur.execute(sql.SQL("GRANT all privileges ON DATABASE {} TO {}").format(sql.Identifier(setup_data['databaseName']), sql.Identifier(setup_data['databaseAdminName'])))
-    # except:
-    #     print("Error code 2")
-    #     cleaner()
-    #     time.sleep(3)
-    #     cur.close()
-    #     conn.close()
-    #     return 0
-    
-    # cur.close()
-    # conn.close()
+            while passwordDoNotMatch:
+                cleaner()
+                print(f"Admin name: {databaseAdminName}\n\nCreating password\n")
+                pass1 = passwordHider.passwordHider("Enter new admin password: ")
+                print()
+                pass2 = passwordHider.passwordHider("Confirm new admin password: ")
+                
+                if pass1 == pass2:
+                    passwordDoNotMatch = False
+                    password = pass1
+                
+                else:
+                    print("\n\n Passwords do not match, try again")
+                    time.sleep(0.5)
+            
+            try:
+                cursor.execute(f"CREATE USER {databaseAdminName} WITH ENCRYPTED PASSWORD '{password}'")
+                
+                cursor.execute(f"GRANT ALL ON DATABASE {databaseName} TO {databaseAdminName}")
+                cursor.execute(f"GRANT ALL ON SCHEMA public TO {databaseAdminName}")
+            except:
+                cleaner()
+                print("Error code 3")
+                time.sleep(5)
+                return 0
+            
+        # *If admin already exist
+            
+        else:
+            cleaner()
+            
+            menuElements = ["Yes", "No", "Exit setup"]
+            currentPos = 0
+            menu = True
+            
+            while menu:
+                cleaner()
+                print("User already exist\nDo you want to delete it and create a new one?\n")
+                
+                for i in range(len(menuElements)):
+                    if i == currentPos:
+                        print(f"-> {menuElements[i]}")
+                    else:
+                        print(menuElements[i])
+                        
+                button = gk.getkeyInASCII()
+                
+                # Move logic
+                
+                if button == 72 and currentPos != 0:
+                    currentPos -= 1
+                
+                elif button == 80 and currentPos != len(menuElements) - 1:
+                    currentPos += 1
+                    
+                # What every button should do
+                    
+                if (button == 13 or button == 10) and currentPos == 0:
+                    try:
+                        cursor.execute(f"REVOKE ALL PRIVLEGES ON DATABASE {databaseName} FROM {databaseAdminName}")
+                        cursor.execute(f"REVOKE ALL ON SCHEMA public FROM {databaseAdminName}")
+                        cursor.execute(f"DROP USER {databaseAdminName}")
+                    except:
+                        cleaner()
+                        print("Error code 2")
+                        time.sleep(5)
+                        return 0
+                    
+                    # *Setting password for database admin
+                    passwordDoNotMatch = True
+                    password = ""
+                    
+                    while passwordDoNotMatch:
+                        cleaner()
+                        print(f"Creating database: {databaseName}\n\nAdmin name: {databaseAdminName}\n\nCreating password\n")
+                        pass1 = passwordHider.passwordHider("Enter new admin password: ")
+                        print()
+                        pass2 = passwordHider.passwordHider("Confirm new admin password: ")
+                        
+                        if pass1 == pass2:
+                            passwordDoNotMatch = False
+                            password = pass1
+                            
+                        else:
+                            print("\n\nPasswords do not match, try again")
+                            time.sleep(0.5)
+                    
+                    try:
+                        cursor.execute(f"CREATE USER {databaseAdminName} WITH ENCRYPTED PASSWORD '{password}'")
+                        cursor.execute(f"GRANT ALL ON SCHEMA public TO {databaseAdminName}")
+                        cursor.execute(f"GRANT ALL PRIVILEGES ON DATABASE {databaseName} TO {databaseAdminName}")
+                    except:
+                        cleaner()
+                        print("Error code 3")
+                        time.sleep(5)
+                        return 0
+                    
+                elif (button == 13 or button == 10) and currentPos == 1:
+                    cleaner()
+                    print("User not created, processing to next step")
+                    time.sleep(5)
+                    
+                    
+                elif (button == 13 or button == 10) and currentPos == len(menuElements) - 1:
+                    cleaner()
+                    print("Exiting setup")
+                    cursor.execute(f"DROP DATABASE {databaseName}")
+                    return 0
         
 def start ():
     return main()
