@@ -16,6 +16,13 @@ art = """
 
 conn = 0
 
+connection_parameters = {
+    "host": '',
+    "port": 5432,
+    "user": '',
+    "password": ''
+}
+
 def cleaner ():
     try:
         os.system('cls')
@@ -23,13 +30,15 @@ def cleaner ():
         os.system('clear')
     print(art)
         
-def createDatabase (connection_parameters):  
+def createDatabase ():  
     global conn
+    global connection_parameters
     
     with open('setup.json', 'r') as setup:
         setup_data = json.load(setup)
     
     databaseName = setup_data['databaseName'].lower()
+    print(databaseName)
     groupName = setup_data['databaseName'] + "Users"
     
     # *Creating database
@@ -96,14 +105,16 @@ def createDatabase (connection_parameters):
                 exit()
                 
     cursor.close()
-    conn.close()
+    conn.close()  
+
     conn = psycopg2.connect(
         host = connection_parameters["host"],
         port = connection_parameters["port"],
         user = connection_parameters["user"],
         password = connection_parameters["password"],
-        database = databaseName,
+        dbname = databaseName
     )
+    
     cursor = conn.cursor()
                 
     # *Creating admin user
@@ -141,7 +152,7 @@ def createDatabase (connection_parameters):
             try:
                 cursor.execute(f"CREATE USER {databaseAdminName} WITH ENCRYPTED PASSWORD '{password}'")
                 
-                cursor.execute(f"GRANT ALL ON DATABASE {databaseName} TO {databaseAdminName}")
+                cursor.execute(f"GRANT ALL PRIVILEGES ON DATABASE {databaseName} TO {databaseAdminName}")
                 cursor.execute(f"GRANT ALL ON SCHEMA public TO {databaseAdminName}")
             except:
                 cleaner()
@@ -182,8 +193,8 @@ def createDatabase (connection_parameters):
                     
                 if (button == 13 or button == 10) and currentPos == 0:
                     try:
-                        cursor.execute(f"REVOKE ALL PRIVLEGES ON DATABASE {databaseName} FROM {databaseAdminName}")
                         cursor.execute(f"REVOKE ALL ON SCHEMA public FROM {databaseAdminName}")
+                        cursor.execute(f"REVOKE ALL PRIVILEGES ON DATABASE {databaseName} FROM {databaseAdminName}")
                         cursor.execute(f"DROP USER {databaseAdminName}")
                     except:
                         cleaner()
@@ -212,8 +223,9 @@ def createDatabase (connection_parameters):
                     
                     try:
                         cursor.execute(f"CREATE USER {databaseAdminName} WITH ENCRYPTED PASSWORD '{password}'")
-                        cursor.execute(f"GRANT ALL ON SCHEMA public TO {databaseAdminName}")
                         cursor.execute(f"GRANT ALL PRIVILEGES ON DATABASE {databaseName} TO {databaseAdminName}")
+                        cursor.execute(f"GRANT ALL ON SCHEMA public TO {databaseAdminName}")
+                        menu = False
                     except:
                         cleaner()
                         print("Error code 3")
@@ -223,6 +235,7 @@ def createDatabase (connection_parameters):
                 elif (button == 13 or button == 10) and currentPos == 1:
                     cleaner()
                     print("User not created, processing to next step")
+                    menu = False
                     time.sleep(5)
                     
                     
@@ -237,13 +250,7 @@ def start ():
 
 def main ():
     global conn
-    
-    connection_parameters = {
-        "host": '',
-        "port": 5432,
-        "user": '',
-        "password": ''
-    }
+    global connection_parameters
     
     ifEstablished = 0
     
@@ -300,7 +307,7 @@ def main ():
         # What every button should do
             
         if (button == 13 or button == 10) and currentPos == 0:
-            output = createDatabase(connection_parameters)
+            output = createDatabase()
             if output == 0:
                 return 0;
             
