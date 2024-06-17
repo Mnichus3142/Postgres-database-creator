@@ -294,7 +294,7 @@ def createDatabase ():
             for j in setup_data["tabs"][i]:
                 tab = []
                 for x in setup_data["tabs"][i][j]:
-                    tab.append(f"{setup_data["tabs"][i][j][x]}")
+                    tab.append(f"{setup_data['tabs'][i][j][x]}")
                 queryToExecute.addColumn(j, tab)
             queryToExecute.endQuery();
             conn.autocommit = True
