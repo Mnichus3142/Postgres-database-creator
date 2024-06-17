@@ -1,27 +1,6 @@
 {
-    "databaseName": "test",
-    "databaseAdminName": "testAdmin",
-
-    "groups":
-    {
-        "group1_name":
-        {
-            "select": "False",
-            "insert": "False",
-            "update": "False",
-            "delete": "False",
-            "truncate": "False",
-            "references": "False",
-            "trigger": "False",
-            "create": "False",
-            "connect": "False",
-            "temporary": "False",
-            "execute": "False",
-            "usage": "False",
-            "set": "False",
-            "alter system": "False"
-        }
-    },
+    "databaseName": "",
+    "databaseAdminName": "",
 
     "tabs":
     {
@@ -33,15 +12,7 @@
                 "length": 0,
                 "notNull": "False",
                 "unique": "False",
-                "primaryKey": "False",
-                "check": "False",
-                "ckeckKeyCondition": "",
-                "ifForeignKey": "False",
-                "foreignKey": "",
-                "referencesTable": "",
-                "referencesKey": "",
-                "onDeleteSetNull": "False",
-                "onDeleteCascade": "False"
+                "primaryKey": "False"
             }
         }
     }

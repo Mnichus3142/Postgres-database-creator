@@ -23,6 +23,44 @@ connection_parameters = {
     "password": ''
 }
 
+class query:
+    line = 0
+    queryToReturn = ""
+    
+    def __init__(self, tableName) -> None:
+        self.queryToReturn = "CREATE TABLE " + tableName + " ("
+        
+    def addColumn (self, columnName, tab) -> None:
+        if self.line == 0:
+            self.queryToReturn = self.queryToReturn + columnName + " " + tab[0]
+            if tab[1] != '0':
+                self.queryToReturn = self.queryToReturn + "(" + tab[1] + ")"
+            if tab[2] != "False":
+                self.queryToReturn = self.queryToReturn + " NOT NULL"
+            if tab[3] != "False":
+                self.queryToReturn = self.queryToReturn + " UNIQUE"
+            if tab[4] != "False":
+                self.queryToReturn = self.queryToReturn + " PRIMARY KEY"
+            self.line = 1
+        
+        else:
+            self.queryToReturn = self.queryToReturn + ", "
+            self.queryToReturn = self.queryToReturn + columnName + " " + tab[0]
+            if tab[1] != '0':
+                self.queryToReturn = self.queryToReturn + "(" + tab[1] + ")"
+            if tab[2] != "False":
+                self.queryToReturn = self.queryToReturn + " NOT NULL"
+            if tab[3] != "False":
+                self.queryToReturn = self.queryToReturn + " UNIQUE"
+            if tab[4] != "False":
+                self.queryToReturn = self.queryToReturn + " PRIMARY KEY"
+    
+    def endQuery(self) -> None:
+        self.queryToReturn = self.queryToReturn + ");"
+    
+    def returnQuery(self) -> str:
+        return self.queryToReturn
+
 def cleaner ():
     try:
         os.system('cls')
@@ -39,7 +77,6 @@ def createDatabase ():
     
     databaseName = setup_data['databaseName'].lower()
     print(databaseName)
-    groupName = setup_data['databaseName'] + "Users"
     
     # *Creating database
     
@@ -49,7 +86,7 @@ def createDatabase ():
     cur = cursor.fetchall()
     tab = [str(x)[2:-3] for x in cur]
     
-    # *If database exists
+    # *If database doesn't exists
     
     if databaseName not in tab:
         try:
@@ -60,10 +97,10 @@ def createDatabase ():
         except:
             cleaner()
             print("Error code 1")
-            time.sleep(5)
+            time.sleep(3)
             return 0
         
-    # *If database doesn't extist
+    # *If database extist
         
     else:        
         menuElements = ["Yes", "No"]
@@ -157,7 +194,7 @@ def createDatabase ():
             except:
                 cleaner()
                 print("Error code 3")
-                time.sleep(5)
+                time.sleep(3)
                 return 0
             
         # *If admin already exist
@@ -199,7 +236,7 @@ def createDatabase ():
                     except:
                         cleaner()
                         print("Error code 2")
-                        time.sleep(5)
+                        time.sleep(3)
                         return 0
                     
                     # *Setting password for database admin
@@ -229,14 +266,14 @@ def createDatabase ():
                     except:
                         cleaner()
                         print("Error code 3")
-                        time.sleep(5)
+                        time.sleep(3)
                         return 0
                     
                 elif (button == 13 or button == 10) and currentPos == 1:
                     cleaner()
                     print("User not created, processing to next step")
                     menu = False
-                    time.sleep(5)
+                    time.sleep(1)
                     
                     
                 elif (button == 13 or button == 10) and currentPos == len(menuElements) - 1:
@@ -244,9 +281,38 @@ def createDatabase ():
                     print("Exiting setup")
                     cursor.execute(f"DROP DATABASE {databaseName}")
                     return 0
+    
+    # *Creating tables
+    
+    cleaner()
+    print("Creating tables...")
+    time.sleep(2)
+    
+    try:
+        for i in setup_data["tabs"]:
+            queryToExecute = query(i)
+            for j in setup_data["tabs"][i]:
+                tab = []
+                for x in setup_data["tabs"][i][j]:
+                    tab.append(f"{setup_data["tabs"][i][j][x]}")
+                queryToExecute.addColumn(j, tab)
+            queryToExecute.endQuery();
+            conn.autocommit = True
+            cursor.execute(queryToExecute.returnQuery())
+            conn.commit()
         
-def start ():
-    return main()
+    except:
+        cleaner()
+        print("Error code 4")
+        time.sleep(3)
+        return 0
+        
+    conn = psycopg2.connect(
+        host = connection_parameters["host"],
+        port = connection_parameters["port"],
+        user = connection_parameters["user"],
+        password = connection_parameters["password"],
+    )
 
 def main ():
     global conn
@@ -283,7 +349,7 @@ def main ():
             time.sleep(0.5)
             
     menuElements = ["Create database from json file", "Exit"]
-    currentPos = 0        
+    currentPos = 0
     
     while True:
         cleaner()   
@@ -312,9 +378,11 @@ def main ():
                 return 0;
             
         elif (button == 13 or button == 10) and currentPos == len(menuElements) - 1:
+            conn.close()
             cleaner()
             print("Goodbye")
             time.sleep(1)
             return 0
 
-start()
+if __name__ == "__main__":
+    main()
